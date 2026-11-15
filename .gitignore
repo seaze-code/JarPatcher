@@ -1,0 +1,7 @@
+bin/
+obj/
+*.user
+*.suo
+_verify_test/
+*-patched.jar
+*.tmp_*

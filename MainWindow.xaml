@@ -1,0 +1,876 @@
+<Window x:Class="JarPatcher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="JarStudio — Bytecode Constant Pool &amp; Resource Patcher"
+        Width="1360" Height="840"
+        MinWidth="1020" MinHeight="640"
+        WindowStartupLocation="CenterScreen"
+        Background="#0E1015"
+        Foreground="#E2E5EC"
+        FontFamily="Segoe UI"
+        FontSize="12"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        AllowDrop="True"
+        DragOver="Window_DragOver"
+        Drop="Window_Drop">
+
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="38"
+                            ResizeBorderThickness="6"
+                            GlassFrameThickness="0"
+                            CornerRadius="0"
+                            UseAeroCaptionButtons="False"/>
+    </shell:WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <!-- ScrollBar Dark Studio Theme -->
+        <Style TargetType="{x:Type ScrollBar}">
+            <Setter Property="Background" Value="#12151C"/>
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid Background="#12151C">
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="{x:Type Thumb}">
+                                                <Border Background="#2A3040" CornerRadius="2" Margin="2"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Orientation" Value="Horizontal">
+                    <Setter Property="Width" Value="Auto"/>
+                    <Setter Property="Height" Value="10"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ScrollBar}">
+                                <Grid Background="#12151C">
+                                    <Track x:Name="PART_Track" IsDirectionReversed="False">
+                                        <Track.Thumb>
+                                            <Thumb>
+                                                <Thumb.Template>
+                                                    <ControlTemplate TargetType="{x:Type Thumb}">
+                                                        <Border Background="#2A3040" CornerRadius="2" Margin="2"/>
+                                                    </ControlTemplate>
+                                                </Thumb.Template>
+                                            </Thumb>
+                                        </Track.Thumb>
+                                    </Track>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Studio Toolbar Button -->
+        <Style x:Key="ToolbarButton" TargetType="Button">
+            <Setter Property="Background" Value="#181C24"/>
+            <Setter Property="Foreground" Value="#D4D8E2"/>
+            <Setter Property="BorderBrush" Value="#262B38"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="11,5"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#222834"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#384154"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#2B3242"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Primary Studio Action Button -->
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#3B82F6"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#1D4ED8"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#60A5FA"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#1E40AF"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Window Caption Button -->
+        <Style x:Key="CaptionButton" TargetType="Button">
+            <Setter Property="Width" Value="42"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#8F96A6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#1F2430"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CaptionCloseButton" TargetType="Button" BasedOn="{StaticResource CaptionButton}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#DC2626"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Filter Tab RadioButton -->
+        <Style x:Key="FilterPill" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#8A91A0"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+            <Setter Property="FontSize" Value="11.5"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="Transparent"
+                                BorderThickness="1"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="#D5DAE4"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#181C24"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#1E293B"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#3B82F6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Dark Studio TextBox -->
+        <Style x:Key="StudioTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#0B0D12"/>
+            <Setter Property="Foreground" Value="#E2E5EC"/>
+            <Setter Property="CaretBrush" Value="#60A5FA"/>
+            <Setter Property="SelectionBrush" Value="#2563EB"/>
+            <Setter Property="BorderBrush" Value="#232834"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#3B82F6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Dark CheckBox -->
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#9CA3B4"/>
+            <Setter Property="FontSize" Value="11.5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </Window.Resources>
+
+    <Border BorderBrush="#222632" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <!-- Custom Title Bar -->
+                <RowDefinition Height="38"/>
+                <!-- Action & Navigation Bar -->
+                <RowDefinition Height="44"/>
+                <!-- Main Studio Workspace -->
+                <RowDefinition Height="*"/>
+                <!-- Status Bar -->
+                <RowDefinition Height="26"/>
+            </Grid.RowDefinitions>
+
+            <!-- ==================== 1. CUSTOM STUDIO TITLE BAR ==================== -->
+            <Border Grid.Row="0" Background="#0A0C10" BorderBrush="#1B1F2A" BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Brand Identity -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
+                        <Border Width="20" Height="20" Background="#1E293B" BorderBrush="#3B82F6" BorderThickness="1" CornerRadius="3" Margin="0,0,9,0">
+                            <Path Data="M4,3 L10,3 L10,5 L6,5 L6,9 L10,9 L10,11 L4,11 Z"
+                                  Fill="#60A5FA" Stretch="Uniform" Margin="4"/>
+                        </Border>
+                        <TextBlock Text="JARSTUDIO" FontWeight="Bold" FontSize="12.5" Foreground="#F1F5F9" VerticalAlignment="Center"/>
+                        <TextBlock Text="BYTECODE &amp; RESOURCE PATCHER" FontSize="10.5" FontWeight="SemiBold" Foreground="#64748B" VerticalAlignment="Center" Margin="8,1,0,0"/>
+                    </StackPanel>
+
+                    <!-- Active Archive Breadcrumb -->
+                    <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Background="#12151D" BorderBrush="#1E2433" BorderThickness="1" CornerRadius="3" Padding="14,3">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M2,2 L6,2 L8,4 L14,4 L14,12 L2,12 Z" Fill="#64748B" Width="11" Height="11" Stretch="Uniform" Margin="0,0,7,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtActiveArchiveTitle" Text="No archive loaded — Drop a .jar file anywhere"
+                                       FontSize="11.5" Foreground="#94A3B8" FontFamily="Consolas" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Window Caption Controls -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                        <Button Style="{StaticResource CaptionButton}" Click="BtnMinimize_Click" ToolTip="Minimize">
+                            <Path Data="M0,5 L10,5" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2"/>
+                        </Button>
+                        <Button Style="{StaticResource CaptionButton}" Click="BtnMaximize_Click" ToolTip="Maximize / Restore">
+                            <Rectangle Width="9" Height="9" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2"/>
+                        </Button>
+                        <Button Style="{StaticResource CaptionCloseButton}" Click="BtnClose_Click" ToolTip="Close">
+                            <Path Data="M0,0 L10,10 M10,0 L0,10" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.3"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ==================== 2. TOP STUDIO ACTION BAR ==================== -->
+            <Border Grid.Row="1" Background="#12151C" BorderBrush="#1F2430" BorderThickness="0,0,0,1" Padding="12,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- File Operations -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Style="{StaticResource PrimaryButton}" Click="BtnOpenJar_Click" Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="M1,2 L5,2 L7,4 L13,4 L13,11 L1,11 Z" Fill="#FFFFFF" Width="12" Height="12" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Open .JAR"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="BtnSaveJar" Style="{StaticResource ToolbarButton}" Click="BtnSaveJar_Click" IsEnabled="False" Margin="0,0,6,0" ToolTip="Save patched bytecode and resources directly to current .JAR (Ctrl+S)">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="M2,1 L11,1 L13,3 L13,13 L1,13 L1,1 Z M4,1 L4,5 L10,5 L10,1 Z M3,8 L3,13 L11,13 L11,8 Z" Fill="#60A5FA" Width="12" Height="12" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Save JAR"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="BtnSaveAsJar" Style="{StaticResource ToolbarButton}" Click="BtnSaveAsJar_Click" IsEnabled="False" Margin="0,0,12,0" ToolTip="Export patched archive as a new .JAR file">
+                            <TextBlock Text="Export Patched JAR..."/>
+                        </Button>
+
+                        <Rectangle Width="1" Height="20" Fill="#232834" Margin="0,0,12,0"/>
+
+                        <!-- Mode Switcher Buttons -->
+                        <Button x:Name="BtnViewGlobalStrings" Style="{StaticResource ToolbarButton}" Click="BtnViewGlobalStrings_Click" Margin="0,0,6,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="M1,2 L13,2 L13,4 L1,4 Z M1,6 L10,6 L10,8 L1,8 Z M1,10 L13,10 L13,12 L1,12 Z" Fill="#94A3B8" Width="11" Height="11" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Global String Pool"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="BtnToggleReplaceBar" Style="{StaticResource ToolbarButton}" Click="BtnToggleReplaceBar_Click" Margin="0,0,6,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="M2,3 L12,3 L12,5 L2,5 Z M2,9 L8,9 L8,11 L2,11 Z" Fill="#94A3B8" Width="11" Height="11" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Batch Find &amp; Replace"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Right Pending Changes Summary & Revert -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border x:Name="BadgePendingChanges" Background="#161B26" BorderBrush="#283044" BorderThickness="1" CornerRadius="3" Padding="10,4" Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse x:Name="DotPendingIndicator" Width="7" Height="7" Fill="#64748B" Margin="0,0,7,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtPendingChanges" Text="0 pending modifications" FontSize="11.5" Foreground="#94A3B8" FontFamily="Consolas"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Button x:Name="BtnRevertAll" Style="{StaticResource ToolbarButton}" Content="Revert All" Click="BtnRevertAll_Click" IsEnabled="False"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ==================== 3. MAIN 3-PANE STUDIO WORKBENCH ==================== -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <!-- Left Package/Resource Tree -->
+                    <ColumnDefinition Width="290" MinWidth="200" MaxWidth="520"/>
+                    <ColumnDefinition Width="4"/>
+                    <!-- Center + Bottom Inspector -->
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- LEFT PANE: ARCHIVE TREE EXPLORER -->
+                <Border Grid.Column="0" Background="#12151C" BorderBrush="#1F2430" BorderThickness="0,0,1,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="34"/>
+                            <RowDefinition Height="36"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Section Header -->
+                        <Border Grid.Row="0" Background="#0E1117" BorderBrush="#1B202B" BorderThickness="0,0,0,1" Padding="12,0">
+                            <Grid>
+                                <TextBlock Text="ARCHIVE EXPLORER" FontSize="10.5" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtTreeEntryCount" Text="0 files" FontSize="11" Foreground="#64748B" FontFamily="Consolas" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Tree Filter Box -->
+                        <Border Grid.Row="1" Padding="8,5" BorderBrush="#1B202B" BorderThickness="0,0,0,1">
+                            <TextBox x:Name="TxtTreeFilter" Style="{StaticResource StudioTextBox}"
+                                     FontSize="11.5" FontFamily="Consolas"
+                                     TextChanged="TxtTreeFilter_TextChanged"
+                                     ToolTip="Filter classes, packages, or config files"/>
+                        </Border>
+
+                        <!-- Hierarchical TreeView -->
+                        <TreeView x:Name="TreeArchive" Grid.Row="2"
+                                  Background="Transparent"
+                                  BorderThickness="0"
+                                  Foreground="#D4D8E2"
+                                  Padding="4,6"
+                                  VirtualizingStackPanel.IsVirtualizing="True"
+                                  VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                  SelectedItemChanged="TreeArchive_SelectedItemChanged">
+                            <TreeView.ItemContainerStyle>
+                                <Style TargetType="{x:Type TreeViewItem}">
+                                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                                    <Setter Property="Foreground" Value="#CBD5E1"/>
+                                    <Setter Property="FontSize" Value="12"/>
+                                    <Setter Property="Padding" Value="3,2"/>
+                                </Style>
+                            </TreeView.ItemContainerStyle>
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                    <StackPanel Orientation="Horizontal" Margin="1,1">
+                                        <Border Background="#1A202C" CornerRadius="2" Padding="4,1" Margin="0,0,6,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding IconBadge}" Foreground="{Binding BadgeColor}" FontFamily="Consolas" FontSize="9.5" FontWeight="Bold"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontFamily="Consolas" FontSize="11.5"/>
+                                        <Ellipse Width="6" Height="6" Fill="#F59E0B" Margin="6,0,0,0" VerticalAlignment="Center">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsModified}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
+                                    </StackPanel>
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>
+                    </Grid>
+                </Border>
+
+                <!-- Vertical Splitter -->
+                <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="#0E1015" Cursor="SizeWE"/>
+
+                <!-- CENTER & BOTTOM WORKBENCH -->
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <!-- Main Active View -->
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="4"/>
+                        <!-- Bottom String Patch & Live Preview Dock -->
+                        <RowDefinition x:Name="RowBottomInspector" Height="235" MinHeight="160" MaxHeight="420"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- ==================== CENTER MULTI-VIEW CONTAINER ==================== -->
+                    <Grid Grid.Row="0" Background="#0E1015">
+
+                        <!-- VIEW A: CONSTANT POOL STRING TABLE (GLOBAL OR CLASS-SCOPED) -->
+                        <Grid x:Name="ViewStringPool" Visibility="Visible">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Filter & Search Bar -->
+                            <Border Grid.Row="0" Background="#12151C" BorderBrush="#1F2430" BorderThickness="0,0,0,1" Padding="12,8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Category Pills -->
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <RadioButton x:Name="FilterAll" Style="{StaticResource FilterPill}" Content="All Strings" IsChecked="True" Checked="FilterCategory_Changed"/>
+                                        <RadioButton x:Name="FilterMinecraft" Style="{StaticResource FilterPill}" Content="Minecraft §/&amp;" Checked="FilterCategory_Changed"/>
+                                        <RadioButton x:Name="FilterUrls" Style="{StaticResource FilterPill}" Content="URLs &amp; Hosts" Checked="FilterCategory_Changed"/>
+                                        <RadioButton x:Name="FilterCommands" Style="{StaticResource FilterPill}" Content="Commands / Keys" Checked="FilterCategory_Changed"/>
+                                        <RadioButton x:Name="FilterModified" Style="{StaticResource FilterPill}" Content="Modified Only" Checked="FilterCategory_Changed"/>
+                                        <Button x:Name="BtnClearClassScope" Style="{StaticResource ToolbarButton}" Content="Scope: All Classes (Reset)"
+                                                Visibility="Collapsed" Padding="8,3" FontSize="11" Margin="6,0,0,0" Click="BtnClearClassScope_Click"/>
+                                    </StackPanel>
+
+                                    <!-- Search Box -->
+                                    <Grid Grid.Column="1" Margin="14,0">
+                                        <TextBox x:Name="TxtSearchStrings" Style="{StaticResource StudioTextBox}"
+                                                 FontFamily="Consolas" FontSize="12"
+                                                 TextChanged="TxtSearchStrings_TextChanged"
+                                                 ToolTip="Search across constant pool string values or class names"/>
+                                        <TextBlock Text="Search string literals or class names..." IsHitTestVisible="False"
+                                                   Foreground="#525A6B" FontFamily="Consolas" FontSize="11.5" Margin="10,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Text, ElementName=TxtSearchStrings}" Value="">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+
+                                    <!-- Search Options & Decompile Class Button -->
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <CheckBox x:Name="ChkMatchCase" Content="Match Case" VerticalAlignment="Center" Margin="0,0,10,0" Checked="SearchOption_Changed" Unchecked="SearchOption_Changed"/>
+                                        <CheckBox x:Name="ChkRegex" Content="Regex" VerticalAlignment="Center" Margin="0,0,12,0" Checked="SearchOption_Changed" Unchecked="SearchOption_Changed"/>
+                                        <Button x:Name="BtnDecompileSelectedClass" Style="{StaticResource ToolbarButton}" Content="Decompile Class (Vineflower)"
+                                                Padding="10,4" FontSize="11.5" Click="BtnDecompileSelectedClass_Click" IsEnabled="False"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Collapsible Batch Find & Replace Bar -->
+                            <Border x:Name="PanelBatchReplace" Grid.Row="1" Visibility="Collapsed"
+                                    Background="#151922" BorderBrush="#242B3A" BorderThickness="0,0,0,1" Padding="12,8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="FIND:" FontSize="11" FontWeight="Bold" Foreground="#8A91A0" VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="Consolas"/>
+                                    <TextBox x:Name="TxtBatchFind" Grid.Column="1" Style="{StaticResource StudioTextBox}" FontFamily="Consolas" Margin="0,0,12,0"/>
+
+                                    <TextBlock Grid.Column="2" Text="REPLACE:" FontSize="11" FontWeight="Bold" Foreground="#8A91A0" VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="Consolas"/>
+                                    <TextBox x:Name="TxtBatchReplace" Grid.Column="3" Style="{StaticResource StudioTextBox}" FontFamily="Consolas" Margin="0,0,12,0"/>
+
+                                    <StackPanel Grid.Column="4" Orientation="Horizontal">
+                                        <Button Style="{StaticResource PrimaryButton}" Content="Replace All in View" Padding="12,4" Margin="0,0,6,0" Click="BtnExecuteBatchReplace_Click"/>
+                                        <Button Style="{StaticResource ToolbarButton}" Content="Convert &amp; -&gt; § in View" Padding="10,4" Click="BtnBatchConvertAmpersand_Click" ToolTip="Convert legacy &amp;a..&amp;f color codes to § section signs in currently filtered strings"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Virtualized High-Density Constant Pool DataGrid -->
+                            <Grid Grid.Row="2">
+                                <DataGrid x:Name="GridStrings"
+                                          AutoGenerateColumns="False"
+                                          CanUserAddRows="False"
+                                          CanUserDeleteRows="False"
+                                          IsReadOnly="True"
+                                          SelectionMode="Single"
+                                          Background="#0E1015"
+                                          RowBackground="#11141B"
+                                          AlternatingRowBackground="#141821"
+                                          Foreground="#E2E5EC"
+                                          BorderThickness="0"
+                                          GridLinesVisibility="Horizontal"
+                                          HorizontalGridLinesBrush="#1B202C"
+                                          HeadersVisibility="Column"
+                                          FontFamily="Consolas"
+                                          FontSize="12"
+                                          EnableRowVirtualization="True"
+                                          EnableColumnVirtualization="True"
+                                          VirtualizingPanel.IsVirtualizing="True"
+                                          VirtualizingPanel.VirtualizationMode="Recycling"
+                                          SelectionChanged="GridStrings_SelectionChanged">
+                                    <DataGrid.ColumnHeaderStyle>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="Background" Value="#0B0D12"/>
+                                            <Setter Property="Foreground" Value="#7E8698"/>
+                                            <Setter Property="FontFamily" Value="Segoe UI"/>
+                                            <Setter Property="FontSize" Value="11"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                            <Setter Property="Padding" Value="10,7"/>
+                                            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                                            <Setter Property="BorderBrush" Value="#1C202B"/>
+                                        </Style>
+                                    </DataGrid.ColumnHeaderStyle>
+                                    <DataGrid.CellStyle>
+                                        <Style TargetType="DataGridCell">
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Padding" Value="8,5"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="DataGridCell">
+                                                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter Property="Background" Value="#1E3A5F"/>
+                                                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGrid.CellStyle>
+                                    <DataGrid.RowStyle>
+                                        <Style TargetType="DataGridRow">
+                                            <Setter Property="MinHeight" Value="29"/>
+                                        </Style>
+                                    </DataGrid.RowStyle>
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="STATE" Width="82">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border x:Name="StateBd" Background="#181C26" CornerRadius="2" Padding="5,1" HorizontalAlignment="Left">
+                                                        <TextBlock x:Name="StateTxt" Text="{Binding StatusBadge}" FontSize="10" FontWeight="Bold" Foreground="#64748B"/>
+                                                    </Border>
+                                                    <DataTemplate.Triggers>
+                                                        <DataTrigger Binding="{Binding IsModified}" Value="True">
+                                                            <Setter TargetName="StateBd" Property="Background" Value="#3B2510"/>
+                                                            <Setter TargetName="StateTxt" Property="Foreground" Value="#F59E0B"/>
+                                                        </DataTrigger>
+                                                    </DataTemplate.Triggers>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="CLASS" Binding="{Binding ShortClassName}" Width="165" Foreground="#93C5FD"/>
+                                        <DataGridTextColumn Header="CP SLOT" Binding="{Binding CpSlotDisplay}" Width="95" Foreground="#64748B"/>
+                                        <DataGridTextColumn Header="CATEGORY" Binding="{Binding Category}" Width="125" Foreground="#94A3B8"/>
+                                        <DataGridTextColumn Header="ORIGINAL CONSTANT_UTF8" Binding="{Binding OriginalValue}" Width="*" Foreground="#9CA3B4"/>
+                                        <DataGridTextColumn Header="ACTIVE / PATCHED VALUE" Binding="{Binding CurrentValue}" Width="*" Foreground="#F8FAFC"/>
+                                        <DataGridTextColumn Header="BYTES" Binding="{Binding ByteLength}" Width="65" Foreground="#64748B"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <!-- Empty Workspace Overlay -->
+                                <Border x:Name="OverlayEmptyState" Background="#0E1015" IsHitTestVisible="False">
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="460">
+                                        <Border Width="48" Height="48" Background="#141821" BorderBrush="#242B3A" BorderThickness="1" CornerRadius="6" HorizontalAlignment="Center" Margin="0,0,0,14">
+                                            <Path Data="M3,2 L9,2 L13,6 L13,14 L3,14 Z M8,2 L8,6 L13,6" Stroke="#3B82F6" StrokeThickness="1.4" Fill="Transparent" Stretch="Uniform" Margin="12"/>
+                                        </Border>
+                                        <TextBlock Text="Open or Drop a Java Archive (.JAR)" FontSize="15" FontWeight="SemiBold" Foreground="#E2E5EC" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Inspect and patch CONSTANT_String / CONSTANT_Utf8 bytecode pools in-place, edit embedded YAML/JSON configs, replace PNG textures, and preview decompiled classes without recompiling."
+                                                   FontSize="12" Foreground="#64748B" TextWrapping="Wrap" TextAlignment="Center" Margin="0,6,0,0" LineHeight="18"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Grid>
+
+                        <!-- VIEW B: CLASS BYTECODE & VINEFLOWER DECOMPILER VIEW -->
+                        <Grid x:Name="ViewClassDecompiler" Visibility="Collapsed" Background="#0E1015">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="40"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Header Bar -->
+                            <Border Grid.Row="0" Background="#12151C" BorderBrush="#1F2430" BorderThickness="0,0,0,1" Padding="12,0">
+                                <Grid>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Style="{StaticResource ToolbarButton}" Content="&lt; Back to Class Strings" Padding="9,3" Margin="0,0,12,0" Click="BtnBackToStrings_Click"/>
+                                        <TextBlock x:Name="TxtDecompClassName" Text="Class Decompiler Preview" FontFamily="Consolas" FontWeight="Bold" Foreground="#93C5FD" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                        <Button Style="{StaticResource PrimaryButton}" Content="Refresh Decompiled Source (With Live Patches)" Padding="10,4" Click="BtnRefreshDecompile_Click"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Bytecode Class Summary Strip -->
+                            <Border Grid.Row="1" Background="#10131A" BorderBrush="#1B202C" BorderThickness="0,0,0,1" Padding="14,7">
+                                <TextBlock x:Name="TxtClassMetadataSummary" Text="Java Version: - | Superclass: - | Constant Pool: - | Fields: - | Methods: -"
+                                           FontFamily="Consolas" FontSize="11.5" Foreground="#8A91A0"/>
+                            </Border>
+
+                            <!-- Decompiled Source Code Editor (Read-Only) -->
+                            <TextBox x:Name="TxtDecompiledCode" Grid.Row="2"
+                                     Background="#0B0D12"
+                                     Foreground="#D4D8E2"
+                                     BorderThickness="0"
+                                     Padding="14,12"
+                                     FontFamily="Consolas"
+                                     FontSize="12.5"
+                                     IsReadOnly="True"
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"
+                                     HorizontalScrollBarVisibility="Auto"
+                                     TextWrapping="NoWrap"/>
+                        </Grid>
+
+                        <!-- VIEW C: CONFIG / RESOURCE TEXT & IMAGE ASSET EDITOR -->
+                        <Grid x:Name="ViewResourceEditor" Visibility="Collapsed" Background="#0E1015">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="40"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Resource Toolbar -->
+                            <Border Grid.Row="0" Background="#12151C" BorderBrush="#1F2430" BorderThickness="0,0,0,1" Padding="12,0">
+                                <Grid>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock x:Name="TxtResourcePath" Text="plugin.yml" FontFamily="Consolas" FontWeight="Bold" Foreground="#10B981" VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="TxtResourceInfo" Text=" (0 bytes)" FontFamily="Consolas" FontSize="11.5" Foreground="#64748B" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                        <Button x:Name="BtnReplaceImageAsset" Style="{StaticResource PrimaryButton}" Content="Replace Image File..." Padding="11,4" Margin="0,0,6,0" Visibility="Collapsed" Click="BtnReplaceImageAsset_Click"/>
+                                        <Button x:Name="BtnApplyTextResource" Style="{StaticResource PrimaryButton}" Content="Apply Resource Changes" Padding="11,4" Margin="0,0,6,0" Click="BtnApplyTextResource_Click"/>
+                                        <Button x:Name="BtnRevertResource" Style="{StaticResource ToolbarButton}" Content="Revert File" Padding="10,4" Click="BtnRevertResource_Click"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Text Config Editor -->
+                            <TextBox x:Name="TxtResourceContent" Grid.Row="1"
+                                     Background="#0B0D12"
+                                     Foreground="#E2E5EC"
+                                     CaretBrush="#60A5FA"
+                                     BorderThickness="0"
+                                     Padding="14,12"
+                                     FontFamily="Consolas"
+                                     FontSize="12.5"
+                                     AcceptsReturn="True"
+                                     AcceptsTab="True"
+                                     VerticalScrollBarVisibility="Auto"
+                                     HorizontalScrollBarVisibility="Auto"
+                                     TextWrapping="NoWrap"/>
+
+                            <!-- Image Asset Preview Panel -->
+                            <Border x:Name="PanelImagePreview" Grid.Row="1" Background="#0B0D12" Visibility="Collapsed">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border Background="#151922" BorderBrush="#262C3A" BorderThickness="1" Padding="16" CornerRadius="4" HorizontalAlignment="Center">
+                                        <Image x:Name="ImgAssetPreview" MaxWidth="360" MaxHeight="360" Stretch="Uniform" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                    </Border>
+                                    <TextBlock x:Name="TxtImageDimensions" Text="64 x 64 px" FontFamily="Consolas" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Grid>
+
+                    <!-- Horizontal Splitter -->
+                    <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch" Background="#0E1015" Cursor="SizeNS"/>
+
+                    <!-- ==================== BOTTOM DOCK: STRING PATCH EDITOR & LIVE MINECRAFT PREVIEW ==================== -->
+                    <Border Grid.Row="2" Background="#12151C" BorderBrush="#1F2430" BorderThickness="0,1,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <!-- Left/Center: Constant String Value Editor -->
+                                <ColumnDefinition Width="1.35*"/>
+                                <ColumnDefinition Width="1"/>
+                                <!-- Right: Live In-Game Color & Tooltip Preview -->
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- String Patch Editor -->
+                            <Grid Grid.Column="0" Margin="12,8">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Target Slot Metadata & Byte Length -->
+                                <Grid Grid.Row="0" Margin="0,0,0,6">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="STRING CONSTANT PATCHER" FontSize="10.5" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="TxtInspectorSlotInfo" Text=" — Select a string row above to edit" FontFamily="Consolas" FontSize="11.5" Foreground="#93C5FD" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                                    </StackPanel>
+                                    <TextBlock x:Name="TxtInspectorByteCount" Text="0 / 65,535 UTF-8 bytes" FontFamily="Consolas" FontSize="11" Foreground="#64748B" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <!-- Quick Color / Formatting Bar -->
+                                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,6">
+                                    <Button Style="{StaticResource ToolbarButton}" Content="§ Section" Padding="7,2" FontSize="11" Margin="0,0,4,0" Click="BtnInsertSectionSign_Click" ToolTip="Insert § section sign at cursor"/>
+                                    <Button Style="{StaticResource ToolbarButton}" Content="&amp; -&gt; §" Padding="7,2" FontSize="11" Margin="0,0,6,0" Click="BtnConvertSelectedAmpersand_Click" ToolTip="Convert &amp; color codes to § in this string"/>
+
+                                    <!-- Authentic Minecraft Color Swatches -->
+                                    <Button Content="§a" Background="#14291A" Foreground="#55FF55" BorderBrush="#22442B" Style="{StaticResource ToolbarButton}" Padding="5,2" FontFamily="Consolas" FontSize="11" Margin="0,0,3,0" Tag="§a" Click="BtnColorCode_Click"/>
+                                    <Button Content="§b" Background="#12282B" Foreground="#55FFFF" BorderBrush="#1F454A" Style="{StaticResource ToolbarButton}" Padding="5,2" FontFamily="Consolas" FontSize="11" Margin="0,0,3,0" Tag="§b" Click="BtnColorCode_Click"/>
+                                    <Button Content="§c" Background="#2B1416" Foreground="#FF5555" BorderBrush="#4A2226" Style="{StaticResource ToolbarButton}" Padding="5,2" FontFamily="Consolas" FontSize="11" Margin="0,0,3,0" Tag="§c" Click="BtnColorCode_Click"/>
+                                    <Button Content="§e" Background="#2B2812" Foreground="#FFFF55" BorderBrush="#4A451F" Style="{StaticResource ToolbarButton}" Padding="5,2" FontFamily="Consolas" FontSize="11" Margin="0,0,3,0" Tag="§e" Click="BtnColorCode_Click"/>
+                                    <Button Content="§6" Background="#2B1F10" Foreground="#FFAA00" BorderBrush="#4A361C" Style="{StaticResource ToolbarButton}" Padding="5,2" FontFamily="Consolas" FontSize="11" Margin="0,0,3,0" Tag="§6" Click="BtnColorCode_Click"/>
+                                    <Button Content="§d" Background="#29142B" Foreground="#FF55FF" BorderBrush="#46224A" Style="{StaticResource ToolbarButton}" Padding="5,2" FontFamily="Consolas" FontSize="11" Margin="0,0,3,0" Tag="§d" Click="BtnColorCode_Click"/>
+                                    <Button Content="§f" Background="#1F242D" Foreground="#FFFFFF" BorderBrush="#343C4C" Style="{StaticResource ToolbarButton}" Padding="5,2" FontFamily="Consolas" FontSize="11" Margin="0,0,3,0" Tag="§f" Click="BtnColorCode_Click"/>
+                                    <Button Content="§7" Background="#181B22" Foreground="#AAAAAA" BorderBrush="#2A2F3B" Style="{StaticResource ToolbarButton}" Padding="5,2" FontFamily="Consolas" FontSize="11" Margin="0,0,6,0" Tag="§7" Click="BtnColorCode_Click"/>
+
+                                    <Button Content="§l Bold" Style="{StaticResource ToolbarButton}" Padding="6,2" FontFamily="Consolas" FontSize="11" Margin="0,0,3,0" Tag="§l" Click="BtnColorCode_Click"/>
+                                    <Button Content="§r Reset" Style="{StaticResource ToolbarButton}" Padding="6,2" FontFamily="Consolas" FontSize="11" Margin="0,0,8,0" Tag="§r" Click="BtnColorCode_Click"/>
+
+                                    <Button x:Name="BtnRevertSingleString" Style="{StaticResource ToolbarButton}" Content="Revert Value" Padding="8,2" FontSize="11" Click="BtnRevertSingleString_Click" IsEnabled="False"/>
+                                </StackPanel>
+
+                                <!-- String Value TextBox -->
+                                <TextBox x:Name="TxtStringPatchValue" Grid.Row="2"
+                                         Style="{StaticResource StudioTextBox}"
+                                         FontFamily="Consolas"
+                                         FontSize="13"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"
+                                         VerticalScrollBarVisibility="Auto"
+                                         VerticalContentAlignment="Top"
+                                         IsEnabled="False"
+                                         TextChanged="TxtStringPatchValue_TextChanged"/>
+                            </Grid>
+
+                            <Border Grid.Column="1" Background="#1F2430"/>
+
+                            <!-- Live In-Game Color & Original Diff Preview -->
+                            <Grid Grid.Column="2" Margin="12,8">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Text="LIVE RENDER PREVIEW (MINECRAFT § / &amp; / HEX)" FontSize="10.5" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,6"/>
+
+                                <!-- Authentic Minecraft Tooltip Box (#100110 with #28005C inner frame) -->
+                                <Border Grid.Row="1" Background="#100110" BorderBrush="#28005C" BorderThickness="2" CornerRadius="2" Padding="12,9">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <TextBlock x:Name="TxtMinecraftPreview"
+                                                   FontFamily="Consolas"
+                                                   FontSize="13.5"
+                                                   Foreground="#FFFFFF"
+                                                   TextWrapping="Wrap"
+                                                   LineHeight="20"/>
+                                    </ScrollViewer>
+                                </Border>
+
+                                <!-- Original Unmodified String Reference -->
+                                <Border Grid.Row="2" Background="#0B0D12" BorderBrush="#1C202B" BorderThickness="1" CornerRadius="2" Padding="8,5" Margin="0,6,0,0">
+                                    <TextBlock x:Name="TxtOriginalValueRef" Text="Original: -" FontFamily="Consolas" FontSize="11" Foreground="#7E8698" TextTrimming="CharacterEllipsis"/>
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <!-- ==================== 4. STUDIO STATUS BAR ==================== -->
+            <Border Grid.Row="3" Background="#0A0C10" BorderBrush="#1B1F2A" BorderThickness="0,1,0,0" Padding="12,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Ellipse x:Name="DotStatusBar" Width="7" Height="7" Fill="#3B82F6" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtStatusBar" Text="Ready. Open or drag a .jar archive into the workspace." FontSize="11.5" Foreground="#94A3B8" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtStatsClasses" Text="CLASSES: 0" FontFamily="Consolas" FontSize="11" Foreground="#64748B" Margin="0,0,14,0"/>
+                        <TextBlock x:Name="TxtStatsStrings" Text="STRINGS: 0" FontFamily="Consolas" FontSize="11" Foreground="#64748B" Margin="0,0,14,0"/>
+                        <TextBlock x:Name="TxtStatsDecompiler" Text="DECOMPILER: CHECKING" FontFamily="Consolas" FontSize="11" Foreground="#10B981"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
